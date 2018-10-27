@@ -5,7 +5,7 @@ import sys
 import cv2
 import numpy as np
 import pylab as pl
-from roipoly import roipoly 
+from roi.roipoly import roipoly 
 
 def nothing(x):
   pass
