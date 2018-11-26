@@ -1,6 +1,7 @@
 '''
 qbio zibra fish visual stimuls control
 author = shivansh dave
+@Qbio summer school KITP 2018 - Liao Zfish module
 '''
 
 from psychopy import visual, core, event
