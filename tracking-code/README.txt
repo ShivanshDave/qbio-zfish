@@ -6,11 +6,11 @@ flow :
 chmod +x track_zfish.py
 
 // Compute Background for all videos in a batch for parallel processing
-(for listing all commands -- verify and remove 'echo' to run them) output >> '/parallel-test.txt'
+(Listing all commands first -- verify and remove 'echo' to run them) (output >> '/parallel-test.txt')
 parallel echo ./track_zfish.py {} --do_bg >> parallel-test.txt ::: ./_local_data/exp_*/*
 parallel ./track_zfish.py {} --do_bg ::: ./_local_data/exp_*/*
 
-// go through all background and fix bad ones by swapping with other similar one from the same-fish-same-protocol trails
+// go through all backgrounds and fix bad ones by swapping with other similar one from the same-fish-same-protocol trails
 cp name_of_GOOD_background.bg.png name_of_BAD_background.bg.png
 
 // Compute and save roi for all videos in the batch
@@ -20,7 +20,7 @@ parallel ./track_zfish.py {} --do_roi ::: ./_local_data/exp_*/*
 (--no-show : To hide annotation images while tracking to aid tracking speed..)
 parallel ./track_zfish.py {} --do_track --old_roi --old_bg --no-show ::: ./_local_data/exp_*/*
 
-// DONE !! for all options 
+// DONE !! -- for all options 
  ./track_zfish.py --help
 
 --- test video and annotated data ---
