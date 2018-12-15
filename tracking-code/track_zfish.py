@@ -79,6 +79,7 @@ def track_fish(videofile,bg,roi,no_show,debug):
 
     annotated_video =  skvideo.io.FFmpegWriter(videofile+"--ANNOTATED.mp4")
     outfile = open(videofile+'.dat','w')
+    outfile.write("# stim 0\n")
     outfile.write("# xr,yr 'tail' --- xl,yl 'head' \n")
     outfile.write("# 1:frame 2:xl 3:yl 4:xr 5:yr\n")
 
