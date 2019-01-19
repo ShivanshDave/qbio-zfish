@@ -1,6 +1,8 @@
 // libraries install 
 pip3 install numpy opencv-python tqdm scikit-image scikit-video argparse
 
+apt install ffmpeg
+
 flow :
 // Make python code executable 
 chmod +x track_zfish.py
