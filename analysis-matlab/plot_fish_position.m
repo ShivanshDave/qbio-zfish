@@ -1,8 +1,10 @@
-function plot_from_mat(exp)
+function plot_fish_position(exp)
 
 % exp = load('C:\Users\sdd50\work\zfish\digitized_data\fish_data_v1.mat');
 plot_dir = 'C:\Users\sdd50\work\zfish\plots';
 plot_type = 'stim-onset-zeroed-position-cropped-trajectories';
+zeroed_plot = 1;
+cropped_plot = 1;
 
 exp_name = {
     'push_sudden','pull_sudden'; 
@@ -27,9 +29,17 @@ down_T1 = 3;
 up_T2 = 2;
 down_T2 = 4;
 
-% ax = [-3e3 5e3 -650*px2mm 650*px2mm];
-% ax = [-500 1500 -650*px2mm 650*px2mm];
-ax = [-500 1500 -150 150];
+% select axis range
+if cropped_plot
+    ax = [-500 1500 nan nan]; % cropped
+else
+    ax = [-3e3 5e3  nan nan]; % full 
+end
+if zeroed_plot
+    ax(3:4) = [-150 150]; % zeroed-position
+else
+    ax(3:4) = [0 300];    % absolute-position
+end
 
 % LPF  
 cutoff = 150; % Hz
@@ -43,7 +53,7 @@ for i=1:5
     expT1_name = strrep(exp_name{i,1},'_','-');
     expT2_name = strrep(exp_name{i,2},'_','-');
    
-    title=[expT1_name,' vs ',expT2_name];
+    title=['', expT1_name,' vs ',expT2_name];
     suptitle(title);
 
     for f=1:4
@@ -68,8 +78,10 @@ for i=1:5
             data.Y = dataT1.headY*px2mm;
           
             data = remove_artifacts(data, lowpass);
-            data.X = data.X - data.X(find(data.t==0));
-            data.Y = data.Y - data.Y(find(data.t==0));
+            if zeroed_plot
+                data.X = data.X - data.X(find(data.t==0));
+                data.Y = data.Y - data.Y(find(data.t==0));
+            end
                         
             hUpT1 = subplot(nRow,nCol,up_T1); hold on;
             plot(data.t,data.X, 'Color', fish_color(f,:));
@@ -83,8 +95,10 @@ for i=1:5
             data.Y = dataT2.headY*px2mm;            
             
             data = remove_artifacts(data, lowpass);
-            data.X = data.X - data.X(find(data.t==0));
-            data.Y = data.Y - data.Y(find(data.t==0));
+            if zeroed_plot
+                data.X = data.X - data.X(find(data.t==0));
+                data.Y = data.Y - data.Y(find(data.t==0));
+            end
             
             hUpT2 = subplot(nRow,nCol,up_T2); hold on;
             plot(data.t,data.X, 'Color', fish_color(f,:));            
@@ -96,25 +110,25 @@ for i=1:5
     
     hUpT1 = subplot(nRow,nCol,up_T1); hold on;
     axis(ax);
-    yticks(-150:50:150);
+    yticks(ax(3):50:ax(4));
 %     yticklabels({'Front', 'center', 'Back'});
     ylabel({'X--dir position ( mm )', '( Neg.: Up-stream, Pos.: Down-stream )'});
 
     hUpT2 = subplot(nRow,nCol,up_T2); hold on;
     axis(ax);
-    yticks(-150:50:150);
+    yticks(ax(3):50:ax(4));
 %     yticklabels({'Front', 'center', 'Back'});
 
     hDownT1 = subplot(nRow,nCol,down_T1); hold on;
     axis(ax);
-    yticks(-150:50:150);
+    yticks(ax(3):50:ax(4));
 %     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
     xlabel({'Time (milliseconds)',expT1_name});
     ylabel({'Y-dir position ( mm )', '( Neg.: Righ-wall, Pos.: Left-wall )'});
 
     hDownT2 = subplot(nRow,nCol,down_T2); hold on;
     axis(ax);
-    yticks(-150:50:150);
+    yticks(ax(3):50:ax(4));
 %     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
     xlabel({'Time (milliseconds)',expT2_name});   
     
@@ -159,18 +173,9 @@ function data = remove_artifacts(data, lowpass)
 
 end
 
-function plot_an_exp_type()
+function plot_single_type()
 
 % TODO
 
 
 end
-
-%%%% Plots
-% only x
-% only y
-% trajectory - X-(front-back), Y(righ-left)
-% change in trajectory (starting position zeroed)
-% X velocity / acceleration 
-% Y velocity / acceleration 
-% Velocity / acceleration 
