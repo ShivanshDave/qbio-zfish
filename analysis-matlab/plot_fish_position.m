@@ -12,127 +12,40 @@ exp_name = {
     'push_adapted_turb','pull_adapted_turb';
     'roll_right_sudden','roll_left_sudden';
     'roll_right_adapted','roll_left_adapted'};
-points = {'headX','headY','tailX','tailY', ...
-          'upX','upY','downX','downY'};
 
-% px2mm = 1;
-px2mm = 1/4.725; % 4.725 pixels = 1 mm ;
-% Max -4k,7k ; 1frame = 1ms;
-      
-%%%% Read Raw Data and populate processed data matrix
+
+% Plot params
+nCol = 2; nRow = 2;
+up_T1 = 1; up_T2 = 2;
+down_T1 = 3; down_T2 = 4;
+
 fish_color = [ [0, 0.4470, 0.7410];[0.8500, 0.3250, 0.0980];...
-               [0.9290, 0.6940, 0.1250];[0.4940, 0.1840, 0.5560] ] ;
-nCol = 2;
-nRow = 2;
-up_T1 = 1;
-down_T1 = 3;
-up_T2 = 2;
-down_T2 = 4;
-
-% select axis range
-if cropped_plot
-    ax = [-500 1500 nan nan]; % cropped
-else
-    ax = [-3e3 5e3  nan nan]; % full 
-end
-if zeroed_plot
-    ax(3:4) = [-150 150]; % zeroed-position
-else
-    ax(3:4) = [0 300];    % absolute-position
-end
+               [0.9290, 0.6940, 0.1250];[0.4940, 0.1840, 0.5560] ];
+           
+% axes for - cropped or full
+if cropped_plot; ax = [-500 1500 nan nan]; else ax = [-3e3 5e3  nan nan]; end
+% axes for - zeroed or absolute position
+if zeroed_plot; ax(3:4) = [-150 150]; else ax(3:4) = [0 300]; end
 
 % LPF  
 cutoff = 150; % Hz
 sr = 1e3; % FPS            
 lowpass = designfilt('lowpassiir','FilterOrder',4, ...
           'PassbandFrequency',cutoff,'PassbandRipple',0.01,'SampleRate',sr);
-
+      
 for i=1:5
     h1 = figure('Name','FishTrajectories','Units','centimeters','Position', [-2, -2, 29.7, 21]);
     
-    expT1_name = strrep(exp_name{i,1},'_','-');
-    expT2_name = strrep(exp_name{i,2},'_','-');
-   
-    title=['', expT1_name,' vs ',expT2_name];
+    T1 = exp_name{i,1}; % Stim Type 1
+    T2 = exp_name{i,2}; % Stim Type 2
+
+    title=['', strrep(T1,'_','-'),' vs ',strrep(T2,'_','-')];
     suptitle(title);
 
-    for f=1:4
-        fishID = ['f',num2str(f)];
+    data = struct;
+    data = get_data_single_type(data, exp, T1, lowpass, zeroed_plot);
+    data = get_data_single_type(data, exp, T2, lowpass, zeroed_plot);
     
-        for t=1:4
-            trialID = ['t',num2str(t)];            
-            % Trial Data Read
-            dataT1 = exp.(exp_name{i,1}).(fishID).(trialID).data;
-            stim_startT1 = exp.(exp_name{i,1}).(fishID).(trialID).stim_start;
-            t_T1 = -(stim_startT1-1):1:size(dataT1,1)-stim_startT1;
-            
-            dataT2 = exp.(exp_name{i,2}).(fishID).(trialID).data;
-            stim_startT2 = exp.(exp_name{i,2}).(fishID).(trialID).stim_start;
-            t_T2 = -(stim_startT2-1):1:size(dataT2,1)-stim_startT2;
-            
-                      
-            data = struct;
-            data.t = t_T1;
-            data.P = dataT1.headP;
-            data.X = dataT1.headX*px2mm;
-            data.Y = dataT1.headY*px2mm;
-          
-            data = remove_artifacts(data, lowpass);
-            if zeroed_plot
-                data.X = data.X - data.X(find(data.t==0));
-                data.Y = data.Y - data.Y(find(data.t==0));
-            end
-                        
-            hUpT1 = subplot(nRow,nCol,up_T1); hold on;
-            plot(data.t,data.X, 'Color', fish_color(f,:));
-            hDownT1 = subplot(nRow,nCol,down_T1); hold on;
-            plot(data.t,data.Y, 'Color', fish_color(f,:));
-            
-            
-            data.t = t_T2;
-            data.P = dataT2.headP;
-            data.X = dataT2.headX*px2mm;
-            data.Y = dataT2.headY*px2mm;            
-            
-            data = remove_artifacts(data, lowpass);
-            if zeroed_plot
-                data.X = data.X - data.X(find(data.t==0));
-                data.Y = data.Y - data.Y(find(data.t==0));
-            end
-            
-            hUpT2 = subplot(nRow,nCol,up_T2); hold on;
-            plot(data.t,data.X, 'Color', fish_color(f,:));            
-            hDownT2 = subplot(nRow,nCol,down_T2); hold on;
-            plot(data.t,data.Y, 'Color', fish_color(f,:));
-          
-        end       
-    end
-    
-    hUpT1 = subplot(nRow,nCol,up_T1); hold on;
-    axis(ax);
-    yticks(ax(3):50:ax(4));
-%     yticklabels({'Front', 'center', 'Back'});
-    ylabel({'X--dir position ( mm )', '( Neg.: Up-stream, Pos.: Down-stream )'});
-
-    hUpT2 = subplot(nRow,nCol,up_T2); hold on;
-    axis(ax);
-    yticks(ax(3):50:ax(4));
-%     yticklabels({'Front', 'center', 'Back'});
-
-    hDownT1 = subplot(nRow,nCol,down_T1); hold on;
-    axis(ax);
-    yticks(ax(3):50:ax(4));
-%     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
-    xlabel({'Time (milliseconds)',expT1_name});
-    ylabel({'Y-dir position ( mm )', '( Neg.: Righ-wall, Pos.: Left-wall )'});
-
-    hDownT2 = subplot(nRow,nCol,down_T2); hold on;
-    axis(ax);
-    yticks(ax(3):50:ax(4));
-%     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
-    xlabel({'Time (milliseconds)',expT2_name});   
-    
-    linkaxes([hUpT1,hUpT2,hDownT1,hDownT2],'x');
     
     fname = sprintf('plot-%s--%s',expT1_name,expT2_name);
     fpath = fullfile(plot_dir,plot_type,fname);
@@ -144,6 +57,41 @@ for i=1:5
   
 end
 
+end
+
+function data = get_data_single_type(data, exp, T, lowpass, zeroed_plot)
+
+    px2mm = 1/4.725;
+    for f=1:4
+        fishID = ['f',num2str(f)];    
+        
+        for t=1:4
+            trialID = ['t',num2str(t)];
+            fish = [fishID,trialID];
+            
+            % Data Read
+            dataT = exp.(T).(fishID).(trialID).data;
+            start_frame_T = exp.(T).(fishID).(trialID).stim_start;
+            data.(T).(fish).P = dataT.headP;
+            data.(T).(fish).X = dataT.headX*px2mm;
+            data.(T).(fish).Y = dataT.headY*px2mm;
+            data.(T).(fish).t = [-(start_frame_T-1):1:size(dataT,1)-start_frame_T]';          
+                        
+            % Clean-up trajaectories
+            data.(T).(fish) = remove_artifacts(data.(T).(fish), lowpass);
+            
+            if zeroed_plot
+                data.(T).(fish).X = data.(T).(fish).X - data.(T).(fish).X(find(data.(T).(fish).t==0)); %#ok
+                data.(T).(fish).Y = data.(T).(fish).Y - data.(T).(fish).Y(find(data.(T).(fish).t==0)); %#ok
+            end                        
+            
+            [data.(T).(fish).Xrho, data.(T).(fish).Xpval] = ...   
+                corr(data.(T).(fish).t',data.(T).(fish).X,'Type','Spearman');
+            [data.(T).(fish).Yrho, data.(T).(fish).Ypval] = ...   
+                corr(data.(T).(fish).t',data.(T).(fish).Y,'Type','Spearman');
+                         
+        end       
+    end
 end
 
 function data = remove_artifacts(data, lowpass)
@@ -173,9 +121,47 @@ function data = remove_artifacts(data, lowpass)
 
 end
 
+
 function plot_single_type()
 
-% TODO
+           hUpT1 = subplot(nRow,nCol,up_T1); hold on;
+            plot(data.t,data.X, 'Color', fish_color(f,:));
+            hDownT1 = subplot(nRow,nCol,down_T1); hold on;
+            plot(data.t,data.Y, 'Color', fish_color(f,:));
+            
+            
+            hUpT2 = subplot(nRow,nCol,up_T2); hold on;
+            plot(data.t,data.X, 'Color', fish_color(f,:));            
+            hDownT2 = subplot(nRow,nCol,down_T2); hold on;
+            plot(data.t,data.Y, 'Color', fish_color(f,:));
+          
+            
+ 
+    
+    hUpT1 = subplot(nRow,nCol,up_T1); hold on;
+    axis(ax);
+    yticks(ax(3):50:ax(4));
+%     yticklabels({'Front', 'center', 'Back'});
+    ylabel({'X--dir position ( mm )', '( Neg.: Up-stream, Pos.: Down-stream )'});
 
+    hUpT2 = subplot(nRow,nCol,up_T2); hold on;
+    axis(ax);
+    yticks(ax(3):50:ax(4));
+%     yticklabels({'Front', 'center', 'Back'});
+
+    hDownT1 = subplot(nRow,nCol,down_T1); hold on;
+    axis(ax);
+    yticks(ax(3):50:ax(4));
+%     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
+    xlabel({'Time (milliseconds)',expT1_name});
+    ylabel({'Y-dir position ( mm )', '( Neg.: Righ-wall, Pos.: Left-wall )'});
+
+    hDownT2 = subplot(nRow,nCol,down_T2); hold on;
+    axis(ax);
+    yticks(ax(3):50:ax(4));
+%     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
+    xlabel({'Time (milliseconds)',expT2_name});   
+    
+    linkaxes([hUpT1,hUpT2,hDownT1,hDownT2],'x');
 
 end
