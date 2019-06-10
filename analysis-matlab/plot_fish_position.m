@@ -1,5 +1,7 @@
 function expdata = plot_fish_position(exp)
 
+% Origin in the video : top-left corner (Front-Left-Edge of tank)
+
 % exp = load('C:\Users\sdd50\work\zfish\digitized_data\fish_data_v1.mat');
 plot_dir = 'C:\Users\sdd50\work\zfish\share-june10';
 plot_type = 'abs-crop';
@@ -226,7 +228,7 @@ function plot_single_type(plt, data, T, pax)
     yticks(plt.ax(3):plt.ytickgapY:plt.ax(4));
 %     yticklabels({'Righ-wall', 'middle', 'Left-wall'});
 %     ylabel({'Y-dir position ( mm )', '( Neg.: Righ-wall, Pos.: Left-wall )'});
-    ylabel({'Y-dir position ( mm )', '<--- Righ-wall -Middle- Left-wall --->'});
+    ylabel({'Y-dir position ( mm )', '<--- Left-wall -Middle- Right-wall --->'});
     xlabel({'Time (milliseconds)',strrep(T,'_','-')});
     
     linkaxes([hUpT,hDownT,],'x');
