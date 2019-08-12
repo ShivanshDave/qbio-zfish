@@ -160,10 +160,10 @@ function data = get_data_single_type(data, exp, T, zeroed_plot)
                 corr(a,by,'Type','Spearman');            
                     
             % Save rho in a matrix        
-            data.(T).Xrho_post(4*f+t) = data.(T).(fish).Xrho.post;
-            data.(T).Yrho_post(4*f+t) = data.(T).(fish).Yrho.post;
-            data.(T).Xrho_pre(4*f+t)  = data.(T).(fish).Xrho.pre;
-            data.(T).Yrho_pre(4*f+t)  = data.(T).(fish).Yrho.pre;
+            data.(T).Xrho_post(4*(f-1)+t) = data.(T).(fish).Xrho.post;
+            data.(T).Yrho_post(4*(f-1)+t) = data.(T).(fish).Yrho.post;
+            data.(T).Xrho_pre(4*(f-1)+t)  = data.(T).(fish).Xrho.pre;
+            data.(T).Yrho_pre(4*(f-1)+t)  = data.(T).(fish).Yrho.pre;
                                   
         end       
     end
