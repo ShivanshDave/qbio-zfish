@@ -40,7 +40,7 @@ end
 if zeroed_plot
     ax(3:4) = [-40 40]; % zeroed-position
 else
-    ax(3:4) = [0 300];    % absolute-position
+    ax(3:4) = [0 300];  % absolute-position
 end
 
 lowpass_freq = designfilt('lowpassiir','FilterOrder',4, ...
@@ -48,28 +48,28 @@ lowpass_freq = designfilt('lowpassiir','FilterOrder',4, ...
 lowpass_amp = designfilt('lowpassiir','FilterOrder',4, ...
           'PassbandFrequency',20,'PassbandRipple',0.01,'SampleRate',1e3);
 
-for i=1:5
+for i=3
     
     h1 = figure('Name','FishTrajectories','Units','centimeters','Position', [-2, -2, 29.7, 21]);
     
-    expT1_name = strrep(exp_name{i,1},'_','-');
-    expT2_name = strrep(exp_name{i,2},'_','-');
-   
-    title=['', expT1_name,' vs ',expT2_name];
-    suptitle(title);
+    T1 = exp_name{i,1}; % Stim Type 1
+    T2 = exp_name{i,2}; % Stim Type 2
 
+    title=['Tail plots : ', strrep(T1,'_','-'),' vs ',strrep(T2,'_','-')];
+    suptitle(title);
+    
     for f=1:4
         fishID = ['f',num2str(f)];
     
         for t=1:4
             trialID = ['t',num2str(t)];            
             % Trial Data Read
-            dataT1 = exp.(exp_name{i,1}).(fishID).(trialID).data;
-            stim_startT1 = exp.(exp_name{i,1}).(fishID).(trialID).stim_start;
+            dataT1 = exp.(T1).(fishID).(trialID).data;
+            stim_startT1 = exp.(T1).(fishID).(trialID).stim_start;
             t_T1 = -(stim_startT1-1):1:size(dataT1,1)-stim_startT1;
             
-            dataT2 = exp.(exp_name{i,2}).(fishID).(trialID).data;
-            stim_startT2 = exp.(exp_name{i,2}).(fishID).(trialID).stim_start;
+            dataT2 = exp.(T2).(fishID).(trialID).data;
+            stim_startT2 = exp.(T2).(fishID).(trialID).stim_start;
             t_T2 = -(stim_startT2-1):1:size(dataT2,1)-stim_startT2;
             
             
